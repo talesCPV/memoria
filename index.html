@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="backend/score.js"></script>
+    <title>Jogo da Memória</title>
+    <style>
+
+        @font-face {
+            font-family: PressStart;
+            src: url(assets/press_start.ttf);
+        }
+
+        *{
+            font-family: pressStart;
+        }
+
+        h1{
+            width: 100%;
+            text-align: center;
+        }
+
+        th{
+            padding: 15px 0;
+        }
+
+        td{
+            min-width: 80px;
+            text-align: center;
+        }
+
+        select{
+            padding: 10px;
+            font-size: 1em;
+        }
+
+        .top{
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            gap: 15px;
+        }
+
+        .board{
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .square{
+            border: solid 2px rgb(245, 21, 140);
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+        .find{
+            border: solid 2px rgb(36, 21, 245);
+        }
+
+        #btnStart{
+            padding: 10px;
+            background-color: cadetblue;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            }
+
+        #edtTempo, #edtJogadas{
+            font-size: 1.5em;
+            /*font-family: pressStart;*/
+            border: none;
+        }
+
+        .line{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .line input{
+            width: 150px;
+        }
+
+        /*  MOBILE  */
+
+        @media all and (max-width : 768px) {
+            
+            table{
+                margin: auto;
+            }
+            
+            .top{
+                flex-direction: column;
+            }
+            .top *{
+                text-align: center;
+            }
+            .center{
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top">
+        <div class="line">
+            <label for="edtTempo">TEMPO</label>
+            <input type="text" id="edtTempo" readonly value="00:00">
+        </div>
+        <div class="line">
+            <label for="edtJogadas">Jogadas</label>
+            <input type="text" id="edtJogadas" readonly value="0">
+        </div>
+        <select id="cmbDificuldade">
+            <option value="10" selected>Fácil</option>
+            <option value="20">Médio</option>
+            <option value="30">Difícil</option>
+        </select>
+        <button id="btnStart">Começar</button>
+    </div>
+
+    <div class="board"></div>
+    
+</body>
+<script>
+
+    var tempo = 0
+    var fimd = 0
+    var jogadas = 0
+    var click = []
+    var hiscore = []
+    setInterval(()=>{
+        
+        if(document.querySelector('#btnStart').innerHTML.trim()=='Desistir'){
+            tempo++
+            document.querySelector('#edtTempo').value = Math.floor(tempo/60).toString().padStart(2,0)+':'+(tempo%60).toString().padStart(2,0)
+        }else{
+            document.querySelector('#edtTempo').value = '00:00'
+        }
+    }, 1000);  
+
+const sprites = [
+        {'x':0,  'y':0, 'w':60,'h':70},
+        {'x':79, 'y':0, 'w':60,'h':70},
+        {'x':158,'y':0, 'w':60,'h':35},
+        {'x':210,'y':0, 'w':60,'h':70},
+        {'x':287,'y':0, 'w':60,'h':50},
+        {'x':358,'y':0, 'w':61,'h':50},
+        {'x':420,'y':0, 'w':61,'h':70},
+        {'x':485,'y':0, 'w':61,'h':70},
+        {'x':558,'y':0, 'w':61,'h':70},
+        {'x':615,'y':0, 'w':61,'h':70},
+        {'x':708,'y':0, 'w':61,'h':70},
+        {'x':778,'y':0, 'w':61,'h':50},
+        {'x':4,  'y':70,'w':70,'h':35},
+        {'x':74, 'y':70,'w':25,'h':70},
+        {'x':145,'y':70,'w':60,'h':70},
+        {'x':215,'y':70,'w':60,'h':70},
+        {'x':283,'y':70,'w':70,'h':40},
+        {'x':350,'y':70,'w':70,'h':50},
+        {'x':422,'y':70,'w':70,'h':50},
+        {'x':490,'y':70,'w':75,'h':70},
+        {'x':560,'y':70,'w':75,'h':70},
+        {'x':633,'y':70,'w':75,'h':60},
+        {'x':700,'y':70,'w':75,'h':70},
+        {'x':770,'y':70,'w':50,'h':70},
+        {'x':7,'y':140,'w':70,'h':70},
+        {'x':70,'y':140,'w':40,'h':70},
+        {'x':140,'y':140,'w':70,'h':70},
+        {'x':215,'y':140,'w':70,'h':50},
+        {'x':285,'y':140,'w':70,'h':50},
+        {'x':350,'y':140,'w':70,'h':70},
+        {'x':420,'y':140,'w':70,'h':60},
+        {'x':490,'y':140,'w':40,'h':60},
+        {'x':560,'y':140,'w':75,'h':40},
+        {'x':630,'y':140,'w':50,'h':70},
+        {'x':700,'y':140,'w':75,'h':30},
+        {'x':770,'y':140,'w':70,'h':70},
+        {'x':0,'y':210,'w':70,'h':50},
+        {'x':70,'y':210,'w':50,'h':70},
+        {'x':140,'y':210,'w':70,'h':30},
+        {'x':210,'y':210,'w':75,'h':60},
+        {'x':280,'y':210,'w':70,'h':70},
+        {'x':350,'y':210,'w':70,'h':50},
+        {'x':420,'y':210,'w':50,'h':70},
+        {'x':490,'y':210,'w':70,'h':70},
+        {'x':560,'y':210,'w':70,'h':50},
+        {'x':630,'y':210,'w':70,'h':40},
+        {'x':700,'y':210,'w':70,'h':70},
+        {'x':770,'y':210,'w':75,'h':60},
+        {'x':0,'y':280,'w':70,'h':70},
+        {'x':70,'y':280,'w':70,'h':40},
+        {'x':140,'y':280,'w':70,'h':40},
+        {'x':210,'y':280,'w':70,'h':20},
+        {'x':280,'y':280,'w':70,'h':70},
+        {'x':350,'y':280,'w':70,'h':50},
+        {'x':420,'y':280,'w':70,'h':70},
+        {'x':490,'y':280,'w':40,'h':70},
+        {'x':560,'y':280,'w':60,'h':70},
+        {'x':630,'y':280,'w':50,'h':70},
+        {'x':700,'y':280,'w':75,'h':70},
+        {'x':770,'y':280,'w':75,'h':50},
+        {'x':0,'y':350,'w':50,'h':70},
+        {'x':70,'y':350,'w':75,'h':70},
+        {'x':140,'y':350,'w':20,'h':70},
+        {'x':210,'y':350,'w':70,'h':70},
+        {'x':280,'y':350,'w':70,'h':70},
+        {'x':350,'y':350,'w':70,'h':70},
+        {'x':420,'y':350,'w':50,'h':70},
+        {'x':490,'y':350,'w':70,'h':50},
+        {'x':560,'y':350,'w':75,'h':60},
+        {'x':630,'y':350,'w':75,'h':50},
+        {'x':700,'y':350,'w':75,'h':50},
+        {'x':770,'y':350,'w':40,'h':70}
+    ]
+
+    function loadImg(path, id,crop={'x':0,'y':0,'w':60,'h':70}) {
+        var ctx = document.getElementById(id);
+        if (ctx.getContext) {
+            ctx = ctx.getContext('2d');
+            var img = new Image()
+            img.src = path
+            img.onload = ()=> {
+                const sx = (80-crop.w)/2
+                const sy = (80-crop.h)/2
+                ctx.drawImage(img, crop.x, crop.y,crop.w,crop.h,sx,sy,crop.w,crop.h)
+            }            
+        }
+    }
+
+    function drawGrid(){
+        const N = parseInt(document.querySelector('#cmbDificuldade').value)
+        const div = document.querySelector('.board')
+        div.innerHTML = ''
+        const order = sortPic(N)
+        for(let i=0; i<N*2; i++){
+            const cnv = document.createElement('canvas')
+            cnv.id = 'cnv-'+(i+1)
+            cnv.width = 80
+            cnv.height = 80
+            cnv.img = i
+            cnv.className = 'square'
+
+            cnv.addEventListener('click',()=>{
+                if(click.length>1){
+                    if(!(click[0].img == click[1].img && click[0].id != click[1].id)){
+                        clear()
+                    }
+                    click = []
+                }else{
+                    if(click.length>0 && click[0].id != cnv.id){
+                        jogadas ++
+                        document.querySelector('#edtJogadas').value = jogadas
+                        
+                        if(click[0].img == order[i]){
+                            document.getElementById(click[0].id).classList.add('find')
+                            cnv.classList.add('find')
+                            win()
+                        }                        
+
+                    }else{
+                        click=[]
+                    }
+                }
+
+                loadImg('assets/sheet.png',cnv.id, sprites[order[i]])
+                click.push({"id":cnv.id,"img":order[i]})
+              
+            })
+          
+            div.appendChild(cnv)
+            
+        }
+    }
+
+    function clear(){
+        for(let i=0; i<click.length; i++){
+            const canvas = document.getElementById(click[i].id)
+            const context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    function win(){
+        const find = document.querySelectorAll('.find').length
+        const total = Number(document.querySelector('#cmbDificuldade').value)*2
+        if(find>=total){
+            const jogadas = Number(document.querySelector('#edtJogadas').value)
+            const dificuldade = document.querySelector('#cmbDificuldade').options[document.querySelector('#cmbDificuldade').selectedIndex].text
+            alert(`Parabéns!!! Você completou com ${jogadas} jogadas em ${document.querySelector('#edtTempo').value}`)
+            setScore(jogadas,tempo,dificuldade)
+            reset()
+        }
+
+    }
+
+    function sortPic(N=20){
+        const out = []
+        const pic = []
+        for(let i=0; i<N*2; i++){
+            let look = 0
+            do{
+                look = Math.floor(Math.random()*N)
+            }while(pic.filter(n=> n==look).length >=  2)
+           pic.push(look)
+        }
+        return pic
+    }
+
+    function reset(){
+        tempo=0
+        jogadas = 0
+        document.querySelector('#edtJogadas').value = jogadas
+        document.querySelector('#edtTempo').value = '00:00'
+        document.querySelector('#btnStart').innerHTML = 'Começar'
+        document.querySelector('#cmbDificuldade').disabled = 0
+        getScore()
+    }
+
+    document.querySelector('#btnStart').addEventListener('click',()=>{
+        
+        const btn = document.querySelector('#btnStart')
+        const sel = document.querySelector('#cmbDificuldade')
+
+        if(btn.innerHTML.trim() == 'Começar'){
+            drawGrid()
+            btn.innerHTML = 'Desistir'
+            sel.disabled = 1
+        }else{
+            alert('Você Perdeu!!!')
+            reset()
+        }
+    })
+
+    reset()   
+
+</script>
+</html>

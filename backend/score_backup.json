@@ -1,0 +1,26 @@
+[
+    {"nivel":"Fácil",
+    "ranking":[
+        {"name":"***","time":100,"try":100},
+        {"name":"***","time":110,"try":100},
+        {"name":"*** ","time":120,"try":100},
+        {"name":"***","time":130,"try":100},
+        {"name":"***","time":140,"try":100}]
+    },
+    {"nivel":"Médio",
+    "ranking":[
+        {"name":"***","time":100,"try":100},
+        {"name":"***","time":110,"try":100},
+        {"name":"*** ","time":120,"try":100},
+        {"name":"***","time":130,"try":100},
+        {"name":"***","time":140,"try":100}]
+    },
+    {"nivel":"Difícil",
+    "ranking":[
+        {"name":"***","time":100,"try":100},
+        {"name":"***","time":110,"try":100},
+        {"name":"*** ","time":120,"try":100},
+        {"name":"***","time":130,"try":100},
+        {"name":"***","time":140,"try":100}]
+    }
+]
